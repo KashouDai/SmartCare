@@ -76,3 +76,12 @@ JWT 密钥、支付宝私钥/公钥、数据源口令与 Druid 控制台口令�
 （见 `application.yml`、`application-druid.yml`，变量清单在上层 `deploy/deploy/.env.example`），
 真实值不落库。新增密钥类配置时沿用同一方式，不要把明文写回配置文件。
 `database/himsss.sql` 等种子脚本中的姓名、手机号、邮箱、身份证号已脱敏。
+
+## 许可证与第三方声明
+
+许可证文件固定放在后端模块目录：
+
+- [LICENSE](deploy/backend/hims-backend-code-master/LICENSE)
+- [NOTICE](deploy/backend/hims-backend-code-master/NOTICE)
+
+项目部分后端、管理端和患者端代码基于 RuoYi-Vue 二次开发。RuoYi-Vue 的来源、MIT 许可和二次开发说明见 `NOTICE`。其他依赖遵循其自身许可证，依赖清单见各模块的 `pom.xml`、`package-lock.json` 和 `requirements.txt`。
