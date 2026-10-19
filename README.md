@@ -14,7 +14,7 @@ SmartCare 是一个面向本地学习与演示的医疗预约挂号与知识助�
 
 ## 第三方声明
 
-项目部分后端、管理端和患者端代码基于 RuoYi-Vue 二次开发。许可和来源说明见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+项目部分后端、管理端和患者端代码基于 RuoYi-Vue 二次开发。许可和来源说明见 [LICENSE](deploy/backend/hims-backend-code-master/LICENSE) 与 [NOTICE](deploy/backend/hims-backend-code-master/NOTICE)。
 
 ## 当前状态
 
