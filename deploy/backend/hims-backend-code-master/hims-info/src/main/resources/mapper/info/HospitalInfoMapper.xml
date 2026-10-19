@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.HospitalInfoMapper">
+
+    <resultMap type="com.hims.info.domain.HospitalInfo" id="HospitalInfoResult">
+        <result property="id"    column="id"    />
+        <result property="hospitalName"    column="hospital_name"    />
+        <result property="hospitalCode"    column="hospital_code"    />
+        <result property="appointmentDay"    column="appointment_day"    />
+        <result property="pcode"    column="pcode"    />
+        <result property="pName"    column="pname"    />
+        <result property="ccode"    column="ccode"    />
+        <result property="cName"    column="cname"    />
+        <result property="tcode"    column="tcode"    />
+        <result property="tName"    column="tname"    />
+        <result property="releaseTime"    column="release_time"    />
+        <result property="suspendTime"    column="suspend_time"    />
+        <result property="level"    column="level"    />
+        <result property="contactsName"    column="contacts_name"    />
+        <result property="contactsPhone"    column="contacts_phone"    />
+        <result property="status"    column="status"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectHospitalInfoVo">
+        select h.id,
+               h.hospital_name,
+               h.hospital_code,
+               h.appointment_day,
+               h.pcode,
+               p.pname as pName,
+               h.ccode,
+               c.cname as cName,
+               h.tcode,
+               t.tname as tName,
+               h.release_time,
+               h.suspend_time,
+               h.level,
+               h.contacts_name,
+               h.contacts_phone,
+               h.status,
+               h.del_flag,
+               h.create_by,
+               h.create_time,
+               h.update_by,
+               h.update_time,
+               h.remark
+        from hospital_info h
+                 left join province_info p on p.pcode = h.pcode
+                 left join city_info c on c.ccode = h.ccode
+                 left join town_info t on t.tcode = h.tcode
+    </sql>
+
+    <select id="selectHospitalInfoList" parameterType="HospitalInfo" resultMap="HospitalInfoResult">
+        <include refid="selectHospitalInfoVo"/>
+        <where>
+            and h.del_flag = 0
+            <if test="hospitalName != null  and hospitalName != ''">
+                and h.hospital_name like concat('%',
+                #{hospitalName}, '%')
+            </if>
+            <if test="hospitalCode != null  and hospitalCode != ''">
+                and h.hospital_code = #{hospitalCode}
+            </if>
+            <if test="pcode != null  and pcode != ''">
+                and h.pcode = #{pcode}
+            </if>
+            <if test="ccode != null  and ccode != ''">
+                and h.ccode = #{ccode}
+            </if>
+            <if test="tcode != null  and tcode != ''">
+                and h.tcode = #{tcode}
+            </if>
+            <if test="level != null  and level != ''">
+                and h.level = #{level}
+            </if>
+            <if test="contactsName != null  and contactsName != ''">
+                and h.contacts_name like concat('%', #{contactsName}, '%')
+            </if>
+            <if test="contactsPhone != null  and contactsPhone != ''">
+                and h.contacts_phone = #{contactsPhone}
+            </if>
+            <if test="status != null ">
+                and h.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectHospitalInfoById" parameterType="Long" resultMap="HospitalInfoResult">
+        <include refid="selectHospitalInfoVo"/>
+        where h.id = #{id}
+    </select>
+
+    <insert id="insertHospitalInfo" parameterType="HospitalInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into hospital_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="hospitalName != null">hospital_name,</if>
+            <if test="hospitalCode != null">hospital_code,</if>
+            <if test="appointmentDay != null">appointment_day,</if>
+            <if test="pcode != null">pcode,</if>
+            <if test="ccode != null">ccode,</if>
+            <if test="tcode != null">tcode,</if>
+            <if test="releaseTime != null">release_time,</if>
+            <if test="suspendTime != null">suspend_time,</if>
+            <if test="level != null">level,</if>
+            <if test="contactsName != null">contacts_name,</if>
+            <if test="contactsPhone != null">contacts_phone,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="hospitalName != null">#{hospitalName},</if>
+            <if test="hospitalCode != null">#{hospitalCode},</if>
+            <if test="appointmentDay != null">#{appointmentDay},</if>
+            <if test="pcode != null">#{pcode},</if>
+            <if test="ccode != null">#{ccode},</if>
+            <if test="tcode != null">#{tcode},</if>
+            <if test="releaseTime != null">#{releaseTime},</if>
+            <if test="suspendTime != null">#{suspendTime},</if>
+            <if test="level != null">#{level},</if>
+            <if test="contactsName != null">#{contactsName},</if>
+            <if test="contactsPhone != null">#{contactsPhone},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateHospitalInfo" parameterType="HospitalInfo">
+        update hospital_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="hospitalName != null">hospital_name = #{hospitalName},</if>
+            <if test="hospitalCode != null">hospital_code = #{hospitalCode},</if>
+            <if test="appointmentDay != null">appointment_day = #{appointmentDay},</if>
+            <if test="pcode != null">pcode = #{pcode},</if>
+            <if test="ccode != null">ccode = #{ccode},</if>
+            <if test="tcode != null">tcode = #{tcode},</if>
+            <if test="releaseTime != null">release_time = #{releaseTime},</if>
+            <if test="suspendTime != null">suspend_time = #{suspendTime},</if>
+            <if test="level != null">level = #{level},</if>
+            <if test="contactsName != null">contacts_name = #{contactsName},</if>
+            <if test="contactsPhone != null">contacts_phone = #{contactsPhone},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteHospitalInfoById" parameterType="Long">
+        update hospital_info set del_flag = 2 where id = #{id}
+    </delete>
+
+    <delete id="deleteHospitalInfoByIds" parameterType="String">
+        update hospital_info set del_flag = 2 where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectList" resultMap="HospitalInfoResult">
+        select id,hospital_name,hospital_code from hospital_info where del_flag = 0
+    </select>
+
+    <select id="selectHospitalInfoByCode" resultMap="HospitalInfoResult">
+        <include refid="selectHospitalInfoVo"/>
+        where h.hospital_code = #{hoscode}
+    </select>
+</mapper>

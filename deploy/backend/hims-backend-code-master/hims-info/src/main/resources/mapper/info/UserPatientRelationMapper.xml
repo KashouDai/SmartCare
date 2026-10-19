@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.UserPatientRelationMapper">
+    <insert id="insertRelation">
+        INSERT IGNORE INTO user_patient_rel (user_id, patient_id, relation_type)
+        VALUES (#{userId}, #{patientId}, 'OWNER')
+    </insert>
+
+    <select id="existsRelation" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM user_patient_rel
+            WHERE user_id = #{userId} AND patient_id = #{patientId}
+        )
+    </select>
+</mapper>

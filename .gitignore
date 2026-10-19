@@ -1,0 +1,49 @@
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/venv/
+
+# 本地密钥配置。只忽略真正放密钥的文件；.env.development / .env.production
+# 这类构建配置必须入库，否则 clone 后构建不出正确产物（如网关路径 /admin/）。
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+
+# Node / frontend
+**/node_modules/
+**/dist/
+**/.nuxt/
+# 注意：不要用 **/build/ —— 它会连管理端的 build/index.js（npm run preview）
+# 和 src/views/tool/build/ 一起排除掉。本项目构建产物统一在 dist/ 与 .nuxt/。
+
+# Java / Maven
+**/target/
+
+# IDE and OS
+**/.idea/
+**/*.iml
+**/.pytest_cache/
+.DS_Store
+Thumbs.db
+
+# Logs and local runtime files
+**/logs/
+**/*.log
+
+# RAG generated data
+drug-rag/data/chroma/
+drug-rag/data/processed/
+drug-rag/data/uploads/
+drug-rag/data/archive/
+drug-rag/data/management/
+# 版本化索引产物与快照：由 ingestion/versioning 流程重新生成，不入库
+drug-rag/data/versions/
+drug-rag/data/drug-*.jsonl
+
+# Local secrets and temporary files
+*.secret
+*.key
+*.pem
+*.tmp

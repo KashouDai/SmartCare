@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.DrugInfoMapper">
+
+    <resultMap type="DrugInfo" id="DrugInfoResult">
+        <result property="id"    column="id"    />
+        <result property="drugName"    column="drug_name"    />
+        <result property="manufacturer"    column="manufacturer"    />
+        <result property="dosageForm"    column="dosage_form"    />
+        <result property="stockQuantity"    column="stock_quantity"    />
+        <result property="purchasePrice"    column="purchase_price"    />
+        <result property="retailPrice"    column="retail_price"    />
+    </resultMap>
+
+    <sql id="selectDrugInfoVo">
+        select id, drug_name, manufacturer, dosage_form, stock_quantity, purchase_price, retail_price from drug_info
+    </sql>
+
+<!--111111111-->
+    <select id="selectDrugInfoList" parameterType="DrugInfo" resultMap="DrugInfoResult">
+        <include refid="selectDrugInfoVo"/>
+        <where>
+            and del_flag = 0
+            <if test="drugName != null  and drugName != ''"> and drug_name like concat('%', #{drugName}, '%')</if>
+            <if test="manufacturer != null  and manufacturer != ''"> and manufacturer = #{manufacturer}</if>
+            <if test="dosageForm != null  and dosageForm != ''"> and dosage_form = #{dosageForm}</if>
+            <if test="stockQuantity != null "> and stock_quantity = #{stockQuantity}</if>
+            <if test="purchasePrice != null "> and purchase_price = #{purchasePrice}</if>
+            <if test="retailPrice != null "> and retail_price = #{retailPrice}</if>
+        </where>
+    </select>
+
+    <select id="selectDrugInfoById" parameterType="Long" resultMap="DrugInfoResult">
+        <include refid="selectDrugInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDrugInfo" parameterType="DrugInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into drug_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="drugName != null and drugName != ''">drug_name,</if>
+            <if test="manufacturer != null">manufacturer,</if>
+            <if test="dosageForm != null and dosageForm != ''">dosage_form,</if>
+            <if test="stockQuantity != null">stock_quantity,</if>
+            <if test="purchasePrice != null">purchase_price,</if>
+            <if test="retailPrice != null">retail_price,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="drugName != null and drugName != ''">#{drugName},</if>
+            <if test="manufacturer != null">#{manufacturer},</if>
+            <if test="dosageForm != null and dosageForm != ''">#{dosageForm},</if>
+            <if test="stockQuantity != null">#{stockQuantity},</if>
+            <if test="purchasePrice != null">#{purchasePrice},</if>
+            <if test="retailPrice != null">#{retailPrice},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDrugInfo" parameterType="DrugInfo">
+        update drug_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="drugName != null and drugName != ''">drug_name = #{drugName},</if>
+            <if test="manufacturer != null">manufacturer = #{manufacturer},</if>
+            <if test="dosageForm != null and dosageForm != ''">dosage_form = #{dosageForm},</if>
+            <if test="stockQuantity != null">stock_quantity = #{stockQuantity},</if>
+            <if test="purchasePrice != null">purchase_price = #{purchasePrice},</if>
+            <if test="retailPrice != null">retail_price = #{retailPrice},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDrugInfoById" parameterType="Long">
+        update drug_info set del_flag = 2 where id = #{id}
+    </delete>
+
+    <delete id="deleteDrugInfoByIds" parameterType="String">
+        update drug_info set del_flag = 2 where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.DoctorMapper">
+
+    <resultMap type="SysUser" id="SysUserResult">
+        <id     property="userId"       column="user_id"      />
+        <result property="deptId"       column="dept_id"      />
+        <result property="userName"     column="user_name"    />
+        <result property="nickName"     column="nick_name"    />
+        <result property="email"        column="email"        />
+        <result property="phonenumber"  column="phonenumber"  />
+        <result property="sex"          column="sex"          />
+        <result property="avatar"       column="avatar"       />
+        <result property="password"     column="password"     />
+        <result property="status"       column="status"       />
+        <result property="delFlag"      column="del_flag"     />
+        <result property="loginIp"      column="login_ip"     />
+        <result property="loginDate"    column="login_date"   />
+        <result property="createBy"     column="create_by"    />
+        <result property="createTime"   column="create_time"  />
+        <result property="updateBy"     column="update_by"    />
+        <result property="updateTime"   column="update_time"  />
+        <result property="remark"       column="remark"       />
+        <association property="dept"    javaType="SysDept"         resultMap="deptResult" />
+        <collection  property="roles"   javaType="java.util.List"  resultMap="RoleResult" />
+    </resultMap>
+
+    <resultMap id="deptResult" type="SysDept">
+        <id     property="deptId"    column="dept_id"     />
+        <result property="parentId"  column="parent_id"   />
+        <result property="deptName"  column="dept_name"   />
+        <result property="ancestors" column="ancestors"   />
+        <result property="orderNum"  column="order_num"   />
+        <result property="leader"    column="leader"      />
+        <result property="status"    column="dept_status" />
+    </resultMap>
+
+    <resultMap id="RoleResult" type="SysRole">
+        <id     property="roleId"       column="role_id"        />
+        <result property="roleName"     column="role_name"      />
+        <result property="roleKey"      column="role_key"       />
+        <result property="roleSort"     column="role_sort"      />
+        <result property="dataScope"    column="data_scope"     />
+        <result property="status"       column="role_status"    />
+    </resultMap>
+
+    <select id="selectUserList" resultType="com.hims.info.domain.DoctorVo">
+        select u.user_id as userId,
+        u.dept_id,
+        d.dept_name as dept,
+        u.nick_name as nickName,
+        h.hospital_id as hospitalId,
+        i.hospital_name as hospitalName,
+        u.email,
+        u.phonenumber,
+        u.sex,
+        u.status,
+        u.remark
+        from sys_user u
+        left join sys_user_role ur on ur.user_id = u.user_id
+        left join sys_role r on ur.role_id = r.role_id
+        left join sys_dept d on d.dept_id = u.dept_id
+        left join sys_user_hospital h on h.user_id = u.user_id
+        left join hospital_info i on i.id = h.hospital_id
+        <where>
+            u.del_flag = 0 and r.role_id = 2
+            <if test="nickName != null and nickName != ''">
+                and u.nick_name LIKE CONCAT('%', #{nickName}, '%')
+            </if>
+            <if test="sex != null and sex != ''">
+                and u.sex = #{sex}
+            </if>
+            <if test="status != null and status != ''">
+                and u.status = #{status}
+            </if>
+            <if test="hospitalId != null and hospitalId != ''">
+                and h.hospital_id = #{hospitalId}
+            </if>
+        </where>
+    </select>
+    <select id="selectUserByUserName" resultType="com.hims.common.core.domain.entity.SysUser">
+        select * from sys_user where user_name = #{userName}
+    </select>
+    <select id="selectUserById" resultType="com.hims.info.domain.DoctorVo">
+        select u.user_id       as userId,
+               u.dept_id       as deptId,
+               d.dept_name     as dept,
+               u.nick_name     as nickName,
+               u.user_name     as userName,
+               h.hospital_id   as hospitalId,
+               i.hospital_name as hospitalName,
+               u.email,
+               u.phonenumber,
+               u.sex,
+               u.status,
+               u.remark
+        from sys_user u
+                 left join sys_user_role ur on ur.user_id = u.user_id
+                 left join sys_role r on ur.role_id = r.role_id
+                 left join sys_dept d on d.dept_id = u.dept_id
+                 left join sys_user_hospital h on h.user_id = u.user_id
+                 left join hospital_info i on i.id = h.hospital_id
+        where u.user_id = #{userId}
+    </select>
+
+    <insert id="insertDocHosp">
+        insert into sys_user_hospital
+        values (#{data.userId}, #{data.hospitalId})
+    </insert>
+
+    <update id="updateDocHosp">
+        update sys_user_hospital set hospital_id = #{hospitalId}
+        where user_id = #{userId}
+    </update>
+
+    <update id="update">
+        update sys_user
+        set dept_id     = #{deptId},
+            user_name   = #{userName},
+            nick_name   = #{nickName},
+            email       = #{email},
+            phonenumber = #{phonenumber},
+            sex         = #{sex},
+            remark      = #{remark}
+        where user_id = #{userId}
+    </update>
+</mapper>

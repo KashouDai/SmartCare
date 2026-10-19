@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.PatientsInfoMapper">
+
+    <resultMap type="PatientsInfo" id="PatientsInfoResult">
+        <result property="patientId"    column="patient_id"    />
+        <result property="cardNo"    column="card_no"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="sex"    column="sex"    />
+        <result property="phone"    column="phone"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectPatientsInfoVo">
+        select patient_id, card_no, nick_name, sex, phone, del_flag, create_by, create_time, update_by, update_time
+        from
+            patients_info
+    </sql>
+
+    <select id="selectPatientsInfoList" resultMap="PatientsInfoResult">
+        <include refid="selectPatientsInfoVo"/>
+        <where>
+            and del_flag = 0
+            <if test="nickName != null  and nickName != ''"> and patients_info.nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="sex != null  and sex != ''"> and sex = #{sex}</if>
+        </where>
+    </select>
+
+    <select id="selectPatientsInfoByPatientId" parameterType="Long" resultMap="PatientsInfoResult">
+        <include refid="selectPatientsInfoVo"/>
+        where patient_id = #{patientId}
+    </select>
+
+    <select id="selectPatientsByUserId" parameterType="Long" resultMap="PatientsInfoResult">
+        select p.patient_id, p.card_no, p.nick_name, p.sex, p.phone, p.del_flag,
+               p.create_by, p.create_time, p.update_by, p.update_time
+        from patients_info p
+        inner join user_patient_rel r on r.patient_id = p.patient_id
+        where r.user_id = #{userId} and p.del_flag = '0'
+    </select>
+
+    <insert id="insertPatientsInfo" parameterType="PatientsInfo" useGeneratedKeys="true" keyProperty="patientId">
+        insert into patients_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="patientId != null">patient_id,</if>
+            <if test="cardNo != null">card_no,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="sex != null">sex,</if>
+            <if test="phone != null">phone,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="patientId != null">#{patientId},</if>
+            <if test="cardNo != null">#{cardNo},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="sex != null">#{sex},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePatientsInfo" parameterType="PatientsInfo">
+        update patients_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="cardNo != null">card_no = #{cardNo},</if>
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="sex != null">sex = #{sex},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where patient_id = #{patientId}
+    </update>
+
+    <delete id="deletePatientsInfoByPatientId" parameterType="Long">
+        update patients_info set del_flag = 2 where patient_id = #{patientId}
+    </delete>
+
+    <delete id="deletePatientsInfoByPatientIds" parameterType="String">
+        update patients_info set del_flag = 2 where patient_id in
+        <foreach item="patientId" collection="array" open="(" separator="," close=")">
+            #{patientId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.order.mapper.OrderMapper">
+
+    <resultMap type="Order" id="OrderResult">
+        <result property="orderId"    column="order_id"    />
+        <result property="appointmentsId"    column="appointments_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="orderAmount"    column="order_amount"    />
+        <result property="payState"    column="pay_state"    />
+        <result property="paymentDeadline"    column="payment_deadline"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectOrderVo">
+        select order_id, appointments_id, user_id, order_amount, pay_state, payment_deadline, del_flag, create_by, create_time, update_by, update_time, remark from order_info
+    </sql>
+
+    <select id="selectOrderList" parameterType="Order" resultMap="OrderResult">
+        <include refid="selectOrderVo"/>
+        <where>
+            <if test="payState != null  and payState != ''"> and pay_state = #{payState}</if>
+        </where>
+    </select>
+
+    <select id="selectOrderByOrderId" parameterType="Long" resultMap="OrderResult">
+        <include refid="selectOrderVo"/>
+        where order_id = #{orderId}
+    </select>
+
+    <insert id="insertOrder" parameterType="Order" useGeneratedKeys="true" keyProperty="orderId">
+        insert into order_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">order_id,</if>
+            <if test="appointmentsId != null">appointments_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="orderAmount != null">order_amount,</if>
+            <if test="payState != null">pay_state,</if>
+            <if test="paymentDeadline != null">payment_deadline,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">#{orderId},</if>
+            <if test="appointmentsId != null">#{appointmentsId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="orderAmount != null">#{orderAmount},</if>
+            <if test="payState != null">#{payState},</if>
+            <if test="paymentDeadline != null">#{paymentDeadline},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrder" parameterType="Order">
+        update order_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="appointmentsId != null">appointments_id = #{appointmentsId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="orderAmount != null">order_amount = #{orderAmount},</if>
+            <if test="payState != null">pay_state = #{payState},</if>
+            <if test="delFlag != null">del_flag = #{delflag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where order_id = #{orderId}
+    </update>
+    <update id="updateOrderStateById">
+        update order_info set pay_state = #{state} where order_id = #{orderId}
+    </update>
+
+    <update id="updatePayStateIfCurrent">
+        update order_info
+        set pay_state = #{toState}, update_time = NOW()
+        where order_id = #{orderId} and pay_state = #{fromState}
+    </update>
+
+    <select id="selectExpiredPendingOrders" resultMap="OrderResult">
+        <include refid="selectOrderVo"/>
+        where pay_state = '0'
+          and payment_deadline is not null
+          and payment_deadline &lt;= #{now}
+          and del_flag = '0'
+        order by payment_deadline
+        limit 100
+    </select>
+
+    <delete id="deleteOrderByOrderId" parameterType="Long">
+        update order_info set del_flag = 2 where order_id = #{orderId}
+    </delete>
+
+    <delete id="deleteOrderByOrderIds" parameterType="String">
+        update order_info set del_flag = 2 where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </delete>
+
+    <select id="selectRegisteredOrderListByUserId" resultType="com.hims.order.domain.RegisteredOrder">
+        select o.order_id as orderId,
+        o.order_amount as orderAmount,
+        o.pay_state as payState,
+        su.nick_name as doctorName,
+        di.duty_date as dutyDate,
+        di.duty_period as dutyPeriod,
+        hi.hospital_name as hospitalName,
+        sd.dept_name as deptName,
+        o.create_time as createTime
+        from order_info o
+        left join appointments_info ai on ai.appointments_id = o.appointments_id and ai.del_flag = 0
+        left join duty_info di on di.schedule_id = ai.schedule_id and di.del_flag = 0
+        left join sys_user su on ai.doctor_id = su.user_id
+        left join sys_user_hospital suh on suh.user_id = ai.doctor_id
+        left join hospital_info hi on suh.hospital_id = hi.id
+        left join sys_dept sd on su.dept_id = sd.dept_id
+        where o.del_flag = 0
+        and o.user_id = #{data.userId}
+        <if test="data.payState != null and data.payState !=''">
+            and o.pay_state = #{data.payState}
+        </if>
+    </select>
+</mapper>

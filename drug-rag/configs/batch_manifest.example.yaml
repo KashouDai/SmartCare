@@ -1,0 +1,27 @@
+defaults:
+  category: unknown
+
+# Optional filename pattern rules. They are used when a document does not
+# declare an explicit category below.
+categories:
+  降压药:
+    patterns:
+      - "*沙坦*"
+      - "*地平*"
+      - "*普利*"
+  解热镇痛药:
+    patterns:
+      - "*布洛芬*"
+      - "*对乙酰氨基酚*"
+  抗菌药:
+    patterns:
+      - "*阿莫西林*"
+      - "*头孢*"
+
+documents:
+  # Paths can be absolute or relative to this manifest file.
+  - path: D:/20期/20期_L2_基于Langchain的RAG系统优化实战（一）/文档/必洛斯_坎地沙坦酯片__说明书_20240522.pdf
+    category: 降压药
+    tags:
+      - ARB
+      - 高血压

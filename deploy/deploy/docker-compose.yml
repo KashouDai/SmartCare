@@ -1,0 +1,138 @@
+services:
+  mysql:
+    build:
+      context: ..
+      dockerfile: deploy/mysql.Dockerfile
+    environment:
+      MYSQL_DATABASE: hims
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  drug-rag:
+    build:
+      context: ../../drug-rag
+      dockerfile: Dockerfile
+    environment:
+      KNOWLEDGE_INTERNAL_TOKEN: ${KNOWLEDGE_INTERNAL_TOKEN:?KNOWLEDGE_INTERNAL_TOKEN 未设置，请在 deploy/.env 中配置}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:?DASHSCOPE_API_KEY 未设置，请在系统环境变量中配置}
+      DRUG_RAG_COLLECTION: drug_chunks_v5
+      DRUG_RAG_SUMMARY_COLLECTION: drug_summaries_v5
+      DRUG_RAG_DIRECTORY: data/processed/drug_directory.json
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/api/health >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/backend.Dockerfile
+    environment:
+      SERVER_PORT: 9999
+      LWS_PROFILE: /app/upload
+      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://mysql:3306/hims?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_DRUID_MASTER_USERNAME: hims_app
+      SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: ${MYSQL_APP_PASSWORD}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      KNOWLEDGE_RAG_URL: http://drug-rag:8000/api/ask
+      KNOWLEDGE_RAG_INTERNAL_TOKEN: ${KNOWLEDGE_INTERNAL_TOKEN:?KNOWLEDGE_INTERNAL_TOKEN 未设置，请在 deploy/.env 中配置}
+      # 镜像内 application.yml / application-druid.yml 已把密钥注释掉改为外部注入，
+      # 这些变量是必须的：缺 TOKEN_SECRET 会导致 TokenService 启动即失败
+      TOKEN_SECRET: ${TOKEN_SECRET:?TOKEN_SECRET 未设置，请在 deploy/.env 中配置}
+      ALIPAY_APPID: ${ALIPAY_APPID:-}
+      ALIPAY_APPPRIVATEKEY: ${ALIPAY_APP_PRIVATE_KEY:-}
+      ALIPAY_ALIPAYPUBLICKEY: ${ALIPAY_PUBLIC_KEY:-}
+    volumes:
+      - upload_data:/app/upload
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      drug-rag:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9999/ | grep -qE '^[2345]'"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  admin-web:
+    build:
+      context: ..
+      dockerfile: deploy/admin-web.Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  site-web:
+    build:
+      context: ..
+      dockerfile: deploy/site-web.Dockerfile
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      NUXT_API_BASE_URL: /api
+      NUXT_INTERNAL_API_BASE_URL: http://backend:9999
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      # node:16-bullseye-slim 不含 wget/curl，且 bullseye-security 仓库的 wget 已 404 装不上，
+      # 故直接用镜像自带的 node 发一次 HTTP 请求
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<400?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  gateway:
+    image: nginx:1.25-alpine
+    ports:
+      - "${GATEWAY_PORT:-8080}:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      admin-web:
+        condition: service_healthy
+      site-web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  mysql_data:
+  redis_data:
+  upload_data:

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.DutyInfoMapper">
+
+    <resultMap type="DutyInfo" id="DutyInfoResult">
+        <result property="scheduleId"    column="schedule_id"    />
+        <result property="doctorId"    column="doctor_id"    />
+        <result property="dutyDate"    column="duty_date"    />
+        <result property="dutyPeriod"    column="duty_period"    />
+        <result property="appointmentsNum"    column="appointments_num"    />
+        <result property="appointmentsNumMade"    column="appointments_num_made"    />
+        <result property="registrationFee"    column="registration_fee"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="doctorIntroduction"    column="doctor_introduction"    />
+    </resultMap>
+
+    <update id="increaseAppointmentsNumMade">
+        UPDATE duty_info
+        SET appointments_num_made = appointments_num_made + 1,
+            update_time = NOW()
+        WHERE schedule_id = #{scheduleId}
+          AND del_flag = '0'
+          AND appointments_num_made &lt; appointments_num
+    </update>
+
+    <update id="decreaseAppointmentsNumMade">
+        UPDATE duty_info
+        SET appointments_num_made = appointments_num_made - 1,
+            update_time = NOW()
+        WHERE schedule_id = #{scheduleId}
+          AND del_flag = '0'
+          AND appointments_num_made &gt; 0
+    </update>
+
+    <sql id="selectDutyInfoVo">
+        select duty.schedule_id as scheduleId,
+               duty.doctor_id as doctorId,
+               user.nick_name as doctorName,
+               h.hospital_name as hospitalName,
+               dept.dept_name as deptName,
+               duty.duty_date as dutyDate,
+               duty.duty_period as dutyPeriod,
+               duty.appointments_num as appointmentsNum,
+               duty.appointments_num_made as appointmentsNumMade,
+               duty.registration_fee as registrationFee,
+               <!-- 必须显式取别名：全局未开启 mapUnderscoreToCamelCase，裸列名 del_flag 无法映射到 delFlag -->
+               duty.del_flag as delFlag,
+               duty.create_by,
+               duty.create_time,
+               duty.update_by,
+               duty.update_time,
+               duty.remark,
+               user.remark as doctorIntroduction
+        from duty_info duty
+            left join sys_user user on duty.doctor_id = user.user_id and user.del_flag = 0
+            left join sys_dept dept on user.dept_id = dept.dept_id and dept.del_flag = 0
+            left join sys_user_hospital uh on uh.user_id = user.user_id
+            left join hospital_info h on h.id = uh.hospital_id and h.del_flag = 0
+    </sql>
+
+    <select id="selectDutyInfoList" parameterType="DutyInfo" resultType="com.hims.info.domain.DutyInfo">
+        <include refid="selectDutyInfoVo"/>
+        <where>
+            and duty.del_flag = 0
+            <if test="doctorName != null and doctorName != '' ">and user.nick_name like concat('%',#{doctorId},'%')
+            </if>
+            <if test="dutyDate != null ">and DATE(duty.duty_date) = DATE(#{dutyDate})</if>
+            <if test="dutyPeriod != null  and dutyPeriod != ''">and duty.duty_period = #{dutyPeriod}</if>
+            <if test="hospitalId != null  and hospitalId != ''">and h.id = #{hospitalId}</if>
+            <if test="deptId != null  and deptId != ''">and dept.dept_id = #{deptId}</if>
+            <if test="appointmentsNum != null ">and duty.appointments_num = #{appointmentsNum}</if>
+            <if test="appointmentsNumMade != null ">and duty.appointments_num_made = #{appointmentsNumMade}</if>
+        </where>
+    </select>
+
+    <select id="selectDutyInfoByScheduleId" parameterType="Long" resultType="com.hims.info.domain.DutyInfo">
+        <include refid="selectDutyInfoVo"/>
+        where duty.schedule_id = #{scheduleId}
+    </select>
+
+
+    <insert id="insertDutyInfo" parameterType="DutyInfo" useGeneratedKeys="true" keyProperty="scheduleId">
+        insert into duty_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="doctorId != null">doctor_id,</if>
+            <if test="dutyDate != null">duty_date,</if>
+            <if test="dutyPeriod != null">duty_period,</if>
+            <if test="appointmentsNum != null">appointments_num,</if>
+            <if test="appointmentsNumMade != null">appointments_num_made,</if>
+            <if test="registrationFee != null">registration_fee,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="doctorId != null">#{doctorId},</if>
+            <if test="dutyDate != null">#{dutyDate},</if>
+            <if test="dutyPeriod != null">#{dutyPeriod},</if>
+            <if test="appointmentsNum != null">#{appointmentsNum},</if>
+            <if test="appointmentsNumMade != null">#{appointmentsNumMade},</if>
+            <if test="registrationFee != null">#{registrationFee},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDutyInfo" parameterType="DutyInfo">
+        update duty_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="doctorId != null">doctor_id = #{doctorId},</if>
+            <if test="dutyDate != null">duty_date = #{dutyDate},</if>
+            <if test="dutyPeriod != null">duty_period = #{dutyPeriod},</if>
+            <if test="appointmentsNum != null">appointments_num = #{appointmentsNum},</if>
+            <if test="appointmentsNumMade != null">appointments_num_made = #{appointmentsNumMade},</if>
+            <if test="registrationFee != null">registration_fee = #{registrationFee},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where schedule_id = #{scheduleId}
+    </update>
+
+    <delete id="deleteDutyInfoByScheduleId" parameterType="Long">
+        update duty_info set del_flag = 2 where schedule_id = #{scheduleId}
+    </delete>
+
+    <delete id="deleteDutyInfoByScheduleIds" parameterType="String">
+        update duty_info set del_flag = 2 where doctor_id in
+        <foreach item="scheduleId" collection="array" open="(" separator="," close=")">
+            #{scheduleId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteDutyInfoByScheduleIdss" parameterType="String">
+        update duty_info set del_flag = 2 where schedule_id in
+        <foreach item="scheduleId" collection="array" open="(" separator="," close=")">
+            #{scheduleId}
+        </foreach>
+    </delete>
+
+
+
+    <select id="selectDutyStateByDate" resultType="java.lang.String">
+        SELECT CASE
+                   WHEN
+                       (sum(di.appointments_num) - SUM(di.appointments_num_made)) > 0 THEN
+                       1
+                   ELSE 0
+                   END AS is_available
+        FROM duty_info di
+                 left join sys_user user on user.user_id = di.doctor_id and user.del_flag = 0
+                 left join sys_user_hospital suh on user.user_id = suh.user_id
+                 left join hospital_info hi on hi.id = suh.hospital_id and hi.del_flag = 0
+        WHERE di.duty_date = #{date}
+          AND di.del_flag = 0
+          and hi.hospital_code = #{hospitalCode}
+          and dept_id = #{deptId}
+    </select>
+</mapper>

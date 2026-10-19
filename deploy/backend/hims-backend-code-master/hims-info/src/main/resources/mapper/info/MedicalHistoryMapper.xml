@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.MedicalHistoryMapper">
+
+    <resultMap type="MedicalHistory" id="MedicalHistoryResult">
+        <result property="historyId"    column="history_id"    />
+        <result property="cardNo"    column="card_no"    />
+        <result property="visitDate"    column="visit_date"    />
+        <result property="doctorName"    column="doctor_name"    />
+        <result property="diagnosis"    column="diagnosis"    />
+        <result property="remark"    column="remark"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectMedicalHistoryVo">
+        select history_id, card_no, visit_date, doctor_name, diagnosis, remark, del_flag, create_by, create_time, update_by, update_time from medical_history
+    </sql>
+
+    <select id="selectMedicalHistoryList" parameterType="MedicalHistory" resultMap="MedicalHistoryResult">
+        <include refid="selectMedicalHistoryVo"/>
+        <where>
+            <if test="visitDate != null "> and visit_date = #{visitDate}</if>
+            <if test="doctorName != null  and doctorName != ''"> and doctor_name like concat('%', #{doctorName}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectMedicalHistoryByHistoryId" parameterType="Long" resultMap="MedicalHistoryResult">
+        <include refid="selectMedicalHistoryVo"/>
+        where history_id = #{historyId}
+    </select>
+
+    <insert id="insertMedicalHistory" parameterType="MedicalHistory" useGeneratedKeys="true" keyProperty="historyId">
+        insert into medical_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="cardNo != null">card_no,</if>
+            <if test="visitDate != null">visit_date,</if>
+            <if test="doctorName != null">doctor_name,</if>
+            <if test="diagnosis != null">diagnosis,</if>
+            <if test="remark != null">remark,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="cardNo != null">#{cardNo},</if>
+            <if test="visitDate != null">#{visitDate},</if>
+            <if test="doctorName != null">#{doctorName},</if>
+            <if test="diagnosis != null">#{diagnosis},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMedicalHistory" parameterType="MedicalHistory">
+        update medical_history
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="cardNo != null">card_no = #{cardNo},</if>
+            <if test="visitDate != null">visit_date = #{visitDate},</if>
+            <if test="doctorName != null">doctor_name = #{doctorName},</if>
+            <if test="diagnosis != null">diagnosis = #{diagnosis},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where history_id = #{historyId}
+    </update>
+
+    <delete id="deleteMedicalHistoryByHistoryId" parameterType="Long">
+        update medical_history set del_flag = 2 where history_id = #{historyId}
+    </delete>
+
+    <delete id="deleteMedicalHistoryByHistoryIds" parameterType="String">
+        update medical_history set del_flag = 2 where history_id in
+        <foreach item="historyId" collection="array" open="(" separator="," close=")">
+            #{historyId}
+        </foreach>
+    </delete>
+</mapper>

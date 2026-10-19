@@ -1,0 +1,83 @@
+{
+  "schema_version": 2,
+  "revision": 10,
+  "updated_at": "2026-10-18T15:30:50.433598+00:00",
+  "domains": {
+    "drug": {
+      "active": "drug-20261018-v5",
+      "retained": [
+        "drug-20261018-v1",
+        "drug-20261018-v2",
+        "drug-20261018-v3",
+        "drug-20261018-v4"
+      ]
+    }
+  },
+  "collections": {
+    "drug-20261018-v1": {
+      "version_id": "drug-20261018-v1",
+      "domain": "drug",
+      "collection_name": "drug_chunks_v1",
+      "embedding_model": "text-embedding-v3",
+      "summary_collection_name": "drug_summaries_v1",
+      "status": "published",
+      "created_at": "2026-10-18T15:25:35.250741+00:00",
+      "published_at": "2026-10-18T15:25:35.250741+00:00",
+      "document_count": 3,
+      "chunk_count": 40,
+      "documents": []
+    },
+    "drug-20261018-v2": {
+      "version_id": "drug-20261018-v2",
+      "domain": "drug",
+      "collection_name": "drug_chunks_v2",
+      "embedding_model": "text-embedding-v3",
+      "summary_collection_name": "drug_summaries_v2",
+      "status": "published",
+      "created_at": "2026-10-18T15:26:24.912106+00:00",
+      "published_at": "2026-10-18T15:26:24.912106+00:00",
+      "document_count": 3,
+      "chunk_count": 40,
+      "documents": []
+    },
+    "drug-20261018-v3": {
+      "version_id": "drug-20261018-v3",
+      "domain": "drug",
+      "collection_name": "drug_chunks_v3",
+      "embedding_model": "text-embedding-v3",
+      "summary_collection_name": "drug_summaries_v3",
+      "status": "published",
+      "created_at": "2026-10-18T15:28:18.400850+00:00",
+      "published_at": "2026-10-18T15:28:18.400850+00:00",
+      "document_count": 3,
+      "chunk_count": 40,
+      "documents": []
+    },
+    "drug-20261018-v4": {
+      "version_id": "drug-20261018-v4",
+      "domain": "drug",
+      "collection_name": "drug_chunks_v4",
+      "embedding_model": "text-embedding-v3",
+      "summary_collection_name": "drug_summaries_v4",
+      "status": "published",
+      "created_at": "2026-10-18T15:28:56.168364+00:00",
+      "published_at": "2026-10-18T15:28:56.168364+00:00",
+      "document_count": 3,
+      "chunk_count": 40,
+      "documents": []
+    },
+    "drug-20261018-v5": {
+      "version_id": "drug-20261018-v5",
+      "domain": "drug",
+      "collection_name": "drug_chunks_v5",
+      "embedding_model": "text-embedding-v3",
+      "summary_collection_name": "drug_summaries_v5",
+      "status": "published",
+      "created_at": "2026-10-18T15:30:50.433598+00:00",
+      "published_at": "2026-10-18T15:30:50.433598+00:00",
+      "document_count": 3,
+      "chunk_count": 40,
+      "documents": []
+    }
+  }
+}

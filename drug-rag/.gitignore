@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+
+# IDE
+.idea/
+*.iml
+
+# Logs
+logs/
+
+# 运行时产物：向量库、解析结果、上传原件
+# data/raw/ 是种子文档位，保持入库
+data/chroma/
+data/processed/
+data/uploads/
+
+# OS
+.DS_Store
+Thumbs.db

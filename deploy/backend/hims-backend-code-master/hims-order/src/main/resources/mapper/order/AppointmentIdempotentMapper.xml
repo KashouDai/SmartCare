@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.order.mapper.AppointmentIdempotentMapper">
+
+    <resultMap type="AppointmentIdempotent" id="AppointmentIdempotentResult">
+        <result property="userId"             column="user_id"/>
+        <result property="requestId"          column="request_id"/>
+        <result property="businessType"       column="business_type"/>
+        <result property="requestFingerprint" column="request_fingerprint"/>
+        <result property="appointmentsId"     column="appointments_id"/>
+        <result property="orderId"            column="order_id"/>
+        <result property="resultStatus"       column="result_status"/>
+        <result property="createTime"         column="create_time"/>
+        <result property="updateTime"         column="update_time"/>
+    </resultMap>
+
+    <sql id="selectAppointmentIdempotentVo">
+        select user_id, request_id, business_type, request_fingerprint,
+               appointments_id, order_id, result_status, create_time, update_time
+        from appointment_idempotent
+    </sql>
+
+    <select id="selectByUserAndRequest" resultMap="AppointmentIdempotentResult">
+        <include refid="selectAppointmentIdempotentVo"/>
+        where user_id = #{userId} and request_id = #{requestId}
+    </select>
+
+    <!-- 并发撞键后必须使用当前读，否则 REPEATABLE READ 下普通读看不到并发已提交的仲裁结果 -->
+    <select id="selectByUserAndRequestForUpdate" resultMap="AppointmentIdempotentResult"
+            flushCache="true" useCache="false">
+        <include refid="selectAppointmentIdempotentVo"/>
+        where user_id = #{userId} and request_id = #{requestId}
+        for update
+    </select>
+
+    <insert id="insertIdempotent" parameterType="AppointmentIdempotent">
+        insert into appointment_idempotent
+            (user_id, request_id, business_type, request_fingerprint,
+             appointments_id, order_id, result_status, create_time, update_time)
+        values
+            (#{userId}, #{requestId}, #{businessType}, #{requestFingerprint},
+             #{appointmentsId}, #{orderId}, #{resultStatus}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updateResult">
+        update appointment_idempotent
+        set appointments_id = #{appointmentsId},
+            order_id = #{orderId},
+            result_status = #{resultStatus},
+            update_time = NOW()
+        where user_id = #{userId} and request_id = #{requestId}
+    </update>
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.info.mapper.AppointmentsInfoMapper">
+
+    <resultMap type="AppointmentsInfo" id="AppointmentsInfoResult">
+        <result column="appointments_id" property="appointmentsId"/>
+        <result column="schedule_id" property="scheduleId"/>
+        <result column="patient_id" property="patientId"/>
+        <result column="status" property="status"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="selectAppointmentsInfoVo">
+        select appointments_id, schedule_id, patient_id, status, del_flag, create_by, create_time, update_by, update_time from appointments_info
+    </sql>
+
+    <select id="selectAppointmentsInfoList" resultType="com.hims.info.domain.AppointmentsInfo">
+        select ainfo.appointments_id,
+        ainfo.schedule_id,
+        ainfo.doctor_id,
+        user.nick_name as doctorName,
+        ainfo.patient_id,
+        pinfo.card_no as cardNo,
+        pinfo.nick_name as patientName,
+        sinfo.duty_date as dutyDate,
+        sinfo.duty_period as dutyPeriod,
+        ainfo.visit_time,
+        ainfo.status,
+        ainfo.del_flag,
+        ainfo.create_time as createTime
+        from appointments_info ainfo
+        left join sys_user user on user.user_id = ainfo.doctor_id and user.del_flag = 0
+        left join patients_info pinfo on pinfo.patient_id = ainfo.patient_id and pinfo.del_flag = 0
+        left join duty_info sinfo on sinfo.schedule_id = ainfo.schedule_id and sinfo.del_flag = 0
+        <where>
+            ainfo.del_flag = 0
+            <if test="data.doctorName != null and data.doctorName != ''">
+                and user.nick_name like concat('%',#{data.doctorName},'%')
+            </if>
+            <if test="data.patientName != null and data.patientName != ''">
+                and pinfo.name like concat('%',#{data.patientName},'%')
+            </if>
+            <if test="data.cardNo != null and data.cardNo != ''">
+                and pinfo.card_no like concat('%',#{data.cardNo},'%')
+            </if>
+            <if test="data.status != null and data.status != ''">
+                and ainfo.status = #{data.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAppointmentsInfoByAppointmentsId" parameterType="Long" resultType="com.hims.info.domain.AppointmentsInfo">
+        select ainfo.appointments_id as appointmentsId,
+               ainfo.schedule_id as scheduleId,
+               ainfo.doctor_id as doctorId,
+               user.nick_name as doctorName,
+               ainfo.patient_id as patientId,
+               pinfo.card_no as cardNo,
+               pinfo.nick_name as patientName,
+               sinfo.duty_date as dutyDate,
+               sinfo.duty_period as dutyPeriod,
+               ainfo.visit_time as visitTime,
+               ainfo.status,
+               ainfo.del_flag,
+               ainfo.create_time as createTime
+        from appointments_info ainfo
+                 left join sys_user user on user.user_id = ainfo.doctor_id and user.del_flag = 0
+                 left join patients_info pinfo on pinfo.patient_id = ainfo.patient_id and pinfo.del_flag = 0
+                 left join duty_info sinfo on sinfo.schedule_id = ainfo.schedule_id and sinfo.del_flag = 0
+        where appointments_id = #{appointmentsId}
+    </select>
+
+    <!-- 有效预约判定复用生成列 active_patient_id（del_flag='0' 且 status IN ('0','1') 时为 patient_id，否则为 NULL），
+         与唯一索引 uk_active_schedule_patient 的语义严格一致 -->
+    <select id="countActiveByScheduleAndPatient" resultType="int">
+        select count(*) from appointments_info
+        where schedule_id = #{scheduleId} and active_patient_id = #{patientId}
+    </select>
+
+    <insert id="insertAppointmentsInfo">
+        insert into appointments_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="appointmentsId != null">appointments_id,</if>
+            <if test="scheduleId != null">schedule_id,</if>
+            <if test="doctorId != null">doctor_id,</if>
+            <if test="patientId != null">patient_id,</if>
+            <if test="status != null">status,</if>
+            <if test="visitTime != null">visit_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="appointmentsId != null">#{appointmentsId},</if>
+            <if test="scheduleId != null">#{scheduleId},</if>
+            <if test="doctorId != null">#{doctorId},</if>
+            <if test="patientId != null">#{patientId},</if>
+            <if test="status != null">#{status},</if>
+            <if test="visitTime != null">#{visitTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAppointmentsInfo" parameterType="AppointmentsInfo">
+        update appointments_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="scheduleId != null">schedule_id = #{scheduleId},</if>
+            <if test="patientId != null">patient_id = #{patientId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where appointments_id = #{appointmentsId}
+    </update>
+    <update id="updateStateById">
+        UPDATE appointments_info
+        SET status = #{state}
+        WHERE appointments_id IN (SELECT appointments_id FROM order_info WHERE order_id = #{orderId});
+    </update>
+
+    <update id="updateStateIfCurrent">
+        update appointments_info
+        set status = #{toState}, update_time = NOW()
+        where appointments_id = #{appointmentsId} and status = #{fromState} and del_flag = '0'
+    </update>
+
+    <delete id="deleteAppointmentsInfoByAppointmentsId" parameterType="Long">
+        update appointments_info set del_flag = 2 where appointments_id = #{appointmentsId}
+    </delete>
+
+    <delete id="deleteAppointmentsInfoByAppointmentsIds" parameterType="String">
+        update appointments_info set del_flag = 2 where appointments_id in
+        <foreach item="appointmentsId" collection="array" open="(" separator="," close=")">
+            #{appointmentsId}
+        </foreach>
+    </delete>
+</mapper>

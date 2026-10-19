@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" <<-EOSQL
+CREATE USER IF NOT EXISTS 'hims_app'@'%' IDENTIFIED BY '${MYSQL_APP_PASSWORD}';
+GRANT ALL PRIVILEGES ON hims.* TO 'hims_app'@'%';
+FLUSH PRIVILEGES;
+EOSQL
+

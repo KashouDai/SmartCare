@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hims.order.mapper.PayRecordMapper">
+
+    <resultMap type="PayRecord" id="PayRecordResult">
+        <result property="tradeNo"    column="trade_no"    />
+        <result property="subject"    column="subject"    />
+        <result property="tradeStatus"    column="trade_status"    />
+        <result property="outTradeNo"    column="out_trade_no"    />
+        <result property="totalAmount"    column="total_amount"    />
+        <result property="gmtPayment"    column="gmt_payment"    />
+        <result property="buyerPayAmount"    column="buyer_pay_amount"    />
+    </resultMap>
+
+    <sql id="selectPayRecordVo">
+        select trade_no, subject, trade_status, out_trade_no, total_amount, gmt_payment, buyer_pay_amount from pay_record
+    </sql>
+
+    <select id="selectPayRecordList" parameterType="PayRecord" resultMap="PayRecordResult">
+        <include refid="selectPayRecordVo"/>
+        <where>
+            <if test="subject != null  and subject != ''"> and subject = #{subject}</if>
+            <if test="tradeStatus != null  and tradeStatus != ''"> and trade_status = #{tradeStatus}</if>
+            <if test="outTradeNo != null "> and out_trade_no = #{outTradeNo}</if>
+            <if test="totalAmount != null "> and total_amount = #{totalAmount}</if>
+            <if test="gmtPayment != null "> and gmt_payment = #{gmtPayment}</if>
+            <if test="buyerPayAmount != null "> and buyer_pay_amount = #{buyerPayAmount}</if>
+        </where>
+    </select>
+
+    <select id="selectPayRecordByTradeNo" parameterType="String" resultMap="PayRecordResult">
+        <include refid="selectPayRecordVo"/>
+        where trade_no = #{tradeNo}
+    </select>
+
+    <select id="selectPayRecordByOutTradeNo" resultMap="PayRecordResult">
+        <include refid="selectPayRecordVo"/>
+        where out_trade_no = #{out_trade_no}
+    </select>
+
+    <insert id="insertPayRecord" parameterType="PayRecord">
+        insert into pay_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tradeNo != null">trade_no,</if>
+            <if test="subject != null">subject,</if>
+            <if test="tradeStatus != null">trade_status,</if>
+            <if test="outTradeNo != null">out_trade_no,</if>
+            <if test="totalAmount != null">total_amount,</if>
+            <if test="gmtPayment != null">gmt_payment,</if>
+            <if test="buyerPayAmount != null">buyer_pay_amount,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tradeNo != null">#{tradeNo},</if>
+            <if test="subject != null">#{subject},</if>
+            <if test="tradeStatus != null">#{tradeStatus},</if>
+            <if test="outTradeNo != null">#{outTradeNo},</if>
+            <if test="totalAmount != null">#{totalAmount},</if>
+            <if test="gmtPayment != null">#{gmtPayment},</if>
+            <if test="buyerPayAmount != null">#{buyerPayAmount},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePayRecord" parameterType="PayRecord">
+        update pay_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="subject != null">subject = #{subject},</if>
+            <if test="tradeStatus != null">trade_status = #{tradeStatus},</if>
+            <if test="outTradeNo != null">out_trade_no = #{outTradeNo},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="gmtPayment != null">gmt_payment = #{gmtPayment},</if>
+            <if test="buyerPayAmount != null">buyer_pay_amount = #{buyerPayAmount},</if>
+        </trim>
+        where trade_no = #{tradeNo}
+    </update>
+
+    <delete id="deletePayRecordByTradeNo" parameterType="String">
+        delete from pay_record where trade_no = #{tradeNo}
+    </delete>
+
+    <delete id="deletePayRecordByTradeNos" parameterType="String">
+        delete from pay_record where trade_no in
+        <foreach item="tradeNo" collection="array" open="(" separator="," close=")">
+            #{tradeNo}
+        </foreach>
+    </delete>
+</mapper>
