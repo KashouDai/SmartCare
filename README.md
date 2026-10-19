@@ -183,3 +183,13 @@ Invoke-WebRequest http://localhost:8080/api/captchaImage -UseBasicParsing
 ```
 
 浏览器验证应覆盖患者端首页、管理端验证码和登录、后端 API，以及知识助手代理链路。当前已验证过公开版 MySQL 镜像构建和本地 Compose 服务启动；生产部署、真实支付/医保/短信对接、医疗合规和生产性能指标不属于当前验证结论。
+
+
+## 许可证与第三方声明
+
+许可证文件固定放在后端模块目录：
+
+- [LICENSE](deploy/backend/hims-backend-code-master/LICENSE)
+- [NOTICE](deploy/backend/hims-backend-code-master/NOTICE)
+
+项目部分后端、管理端和患者端代码基于 RuoYi-Vue 二次开发。RuoYi-Vue 的来源、MIT 许可和二次开发说明见 `NOTICE`。其他依赖遵循其自身许可证，依赖清单见各模块的 `pom.xml`、`package-lock.json` 和 `requirements.txt`。
